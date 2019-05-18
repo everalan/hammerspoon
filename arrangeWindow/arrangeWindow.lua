@@ -7,9 +7,9 @@ table.insert(menuData, {title="PhpStorm:Chrome 1:1", fn = function() dev() end})
 table.insert(menuData, {title="访达全屏", fn = function() finder() end})
 arranger:setMenu(menuData)
 
-for k,v in pairs(hs.window.visibleWindows()) do
-	print(v:application())
-end
+--for k,v in pairs(hs.window.visibleWindows()) do
+--	print(v:application())
+--end
 
 function dev()
 	layout1 = {
