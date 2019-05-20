@@ -1,0 +1,16 @@
+#!/usr/local/bin/php
+<?php
+require('vendor/autoload.php');
+use everalan\VPN\VPN;
+
+if($log_file = $argv[1])
+{
+    fclose(STDIN);
+    fclose(STDOUT);
+    fclose(STDERR);
+    $STDIN = fopen('/dev/null', 'r');
+    $STDOUT = fopen($log_file, 'a');
+    $STDERR = fopen($log_file, 'a');
+}
+
+$o = new VPN();

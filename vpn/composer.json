@@ -1,0 +1,10 @@
+{
+    "require": {
+        "symfony/process": "^4.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "everalan\\": "libraries/"
+        }
+    }
+}
