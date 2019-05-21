@@ -97,7 +97,7 @@ class VPN
     {
         $p = new Process(['/usr/local/bin/openconnect', '-v', 'vpn.everalan.com'], null, null, "everalan\nx\n", null);
         $p->start();
-        $this->serv->sendMessage(json_encode(['pid', $p->getPid()]), 0);;
+        $this->serv->sendMessage(['pid', $p->getPid()], 0);;
         $p->wait(function ($type, $buffer){
             foreach(preg_split('/[\r\n]+/', trim($buffer)) as $line)
             {
