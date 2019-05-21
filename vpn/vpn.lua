@@ -9,6 +9,7 @@ local frequency = 10 --检查周期
 local menubar = hs.menubar.new()
 local iconLocked = hs.image.imageFromPath(iconLockedFile):setSize({w=16, h=16})
 local iconUnocked = hs.image.imageFromPath(iconUnlockedFile):setSize({w=16, h=16})
+local wantConnect = false --期望连接, 重新联网后如果未连接,自动连接
 
 local function getState()
     local code, state = hs.http.get('http://127.0.0.1:9501/state')
@@ -39,6 +40,7 @@ local vpnPopulateMenu = function(key)
             table.insert(menuData, {
                 title="断开连接", 
                 fn = function() 
+                    wantConnect = false
                     disconnect()
                 end
             })
@@ -48,10 +50,17 @@ local vpnPopulateMenu = function(key)
                 title="断开连接", 
                 fn = disconnect
             })
+        elseif state == 'connecting' then
+            table.insert(menuData, {title="连接中", disabled=true})
+            table.insert(menuData, {
+                title="断开连接", 
+                fn = disconnect
+            })
         elseif state == 'disconnect' then
             table.insert(menuData, {
                 title="连接", 
                 fn = function() 
+                    wantConnect = true
                     connect()
                 end
             })
@@ -67,6 +76,11 @@ hs.network.reachability.forHostName('baidu.com'):setCallback(function(self, flag
     print("INTERNET " .. flags)
     if flags > 0 then
         inInternet = true
+        if wantConnect then --重新联网,期望连接,就自动连接
+            if getState() == 'disconnect' then
+                connect()
+            end
+        end
     else
         inInternet = false
     end

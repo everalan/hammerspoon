@@ -60,8 +60,8 @@ class VPN
         });
 
         $http->on('pipemessage', function(\swoole_server $server, $src_worker_id, $message){
-            echo "$message\n";
-            list($act, $val) = json_decode($message);
+            echo json_encode($message) . "\n";
+            list($act, $val) = $message;
             switch($act)
             {
                 case 'state':
@@ -95,20 +95,28 @@ class VPN
 
     protected function connect()
     {
-        $p = new Process(['/usr/local/bin/openconnect', 'vpn.everalan.com'], null, null, "everalan\nx\n", null);
+        $p = new Process(['/usr/local/bin/openconnect', '-v', 'vpn.everalan.com'], null, null, "everalan\nx\n", null);
         $p->start();
         $this->serv->sendMessage(json_encode(['pid', $p->getPid()]), 0);;
-        $p->wait(function ($type, $buffer) use($input) {
-            echo $buffer;
+        $p->wait(function ($type, $buffer){
+            foreach(preg_split('/[\r\n]+/', trim($buffer)) as $line)
+            {
+                echo $line . "\n";
             
-            if(preg_match('/CSTP 已连接/', $buffer))
-            {
-                $this->serv->sendMessage(json_encode(['state', 'connected']), 0); //向主进程发送消息
+                if(preg_match('/^POST /', $line))
+                {
+                    $this->serv->sendMessage(['state', 'connecting'], 0); //向主进程发送消息
+                }
+                if(preg_match('/^Connected as /', $line))
+                {
+                    $this->serv->sendMessage(['state', 'connected'], 0); //向主进程发送消息
+                }
+                if(preg_match('/^Failed to reconnect to /', $line))
+                {
+                    $this->serv->sendMessage(['state', 'reconnecting'], 0); //向主进程发送消息
+                }
             }
-            if(preg_match('/睡眠/', $buffer))
-            {
-                $this->serv->sendMessage(json_encode(['state', 'reconnecting']), 0); //向主进程发送消息
-            }
+            
         });
         echo "process finished\n";
     }    
